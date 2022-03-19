@@ -1,8 +1,10 @@
 import time
+import datetime
+import os
 import matplotlib.pyplot as plt
 
 def plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_outs, Reynolds, Nusselts, T_gases,
-              h_gs, h_ls, clt_vels, Q_in_fulls, Q_out_fulls):
+              h_gs, h_ls, clt_vels, Q_in_fulls, Q_out_fulls, geom_x, geom_y):
 
     # PRINT TOTAL Q
     Q_in_total = 0
@@ -58,33 +60,6 @@ def plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_outs, Reyno
     plt.xlabel("Position (m)")
     plt.ylabel("Heat Transferred (W)")
 
-    # HEAT PLOT (3D)
-    plt.figure(12)
-    ax = plt.axes(projection='3d')
-    
-    times = []
-    for i in range(num_frames):
-        times.append(i*time_step)
-
-    for i in range(0, num_frames, int(num_frames/10)):
-        ax.plot3D(Q_ins[i], xs, times[i], color="red")
-
-    for i in range(0, num_frames, int(num_frames/10)):
-        ax.plot3D(Q_outs[i], xs, times[i], color="blue")
-
-    # HEAT DIFF. PLOT (3D)
-    plt.figure(13)
-    ax = plt.axes(projection='3d')
-
-    Q_nets = []
-    for i in range(len(Q_ins)):
-        Q_nets.append([])
-        for j in range(len(Q_ins[0])):
-            Q_nets[i].append(Q_ins[i][j] - Q_outs[i][j])
-    
-    for i in range(0, num_frames, int(num_frames/10)):
-        ax.plot3D(Q_nets[i], xs, times[i], color="green")
-
     # REYNOLDS NUMBER PLOT
     plt.figure(4)
 
@@ -124,9 +99,9 @@ def plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_outs, Reyno
         plt.plot(xs, h_gs[i])
 
     plt.grid()
-    plt.title("Combustion Gas Convection")
+    plt.title("hg")
     plt.xlabel("Position (m)")
-    plt.ylabel("hg (W m-2 K-1)")
+    plt.ylabel("hg")
 
     # LIQUID FILM COEFF. PLOT
     plt.figure(8)
@@ -135,9 +110,9 @@ def plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_outs, Reyno
         plt.plot(xs, h_ls[i])
 
     plt.grid()
-    plt.title("Coolant Convection")
+    plt.title("hl")
     plt.xlabel("Position (m)")
-    plt.ylabel("hl (W m-2 K-1)")
+    plt.ylabel("hl")
 
     # COOLANT VELOCITY PLOT
     plt.figure(9)
@@ -170,4 +145,68 @@ def plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_outs, Reyno
     plt.xlabel("Time")
     plt.ylabel("Total Q Out")
 
-    plt.show()
+##    # HEAT PLOT (3D)
+##    plt.figure(12)
+##    ax = plt.axes(projection='3d')
+##    
+##    times = []
+##    for i in range(num_frames):
+##        times.append(i*time_step)
+##
+##    for i in range(0, num_frames, int(num_frames/10)):
+##        ax.plot3D(Q_ins[i], xs, times[i], color="red")
+##
+##    for i in range(0, num_frames, int(num_frames/10)):
+##        ax.plot3D(Q_outs[i], xs, times[i], color="blue")
+##
+##    # HEAT DIFF. PLOT (3D)
+##    plt.figure(13)
+##    ax = plt.axes(projection='3d')
+##
+##    Q_nets = []
+##    for i in range(len(Q_ins)):
+##        Q_nets.append([])
+##        for j in range(len(Q_ins[0])):
+##            Q_nets[i].append(Q_ins[i][j] - Q_outs[i][j])
+##    
+##    for i in range(0, num_frames, int(num_frames/10)):
+##        ax.plot3D(Q_nets[i], xs, times[i], color="green")
+
+    # ENGINE GEOMETRY
+    plt.figure(12)
+
+    plt.axes().set_aspect('equal')
+    plt.plot(geom_x, geom_y)
+    geom_y_negative = []
+    for y in geom_y:
+        geom_y_negative.append(-y)
+    plt.plot(geom_x, geom_y_negative)
+
+    plt.grid()
+    plt.title("Thrust Chamber Geometry")
+    plt.xlabel("X")
+    plt.ylabel("Y")
+
+    folder_name = "heat_analysis_" + datetime.datetime.now().strftime("%y%m%d%H%M%S")
+    print("Exporting figures to folder: " + folder_name)
+
+    try:
+        if not os.path.exists(folder_name):
+            os.makedirs(folder_name)
+    except:
+        print("ERROR: Could not create folder. Try saving figures by hand.")
+        plt.show()
+        return
+
+    try:
+        for i in range(1, 13):
+            new_fig = plt.figure(i)
+            save_str = folder_name + "/figure_" + str(i) + ".png"
+            new_fig.savefig(save_str)
+    except:
+        print("ERROR: Could not save some or all of the figures. Try saving figures by hand.")
+        plt.show()
+        return
+
+    print("Figures exported successfully!")
+    qc = input("Press Enter to quit...")

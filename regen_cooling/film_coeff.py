@@ -1,12 +1,10 @@
-import math
-
 from material import SS304L, CuCrZr, Jet_A1
 
 SS304L = SS304L()
 CuCrZr = CuCrZr()
 Jet_A1 = Jet_A1()
 
-pi = math.pi
+pi = 3.14159
 
 # Bartz Equation
 

@@ -10,6 +10,7 @@
 
 import math
 pi = math.pi
+import re
 
 from film_coeff import *
 from geometry import *
@@ -21,57 +22,75 @@ SS = SS304L()
 CCZ = CuCrZr()
 JetA1 = Jet_A1()
 
+materials = [SS, CCZ, JetA1]
+
+def get_material_by_name(line):
+    global materials
+    
+    if "SS" in line:
+        return materials[0]
+    elif "CCZ" in line:
+        return materials[1]
+    elif "Jet A1" in line:
+        return materials[2]
+
+config_filename = input("Enter filename to import values from: ")
+if not config_filename.endswith(".txt"):
+    config_filename += ".txt"
+config_file = open(config_filename, "r")
+config_lines = config_file.readlines()
+
 # - - - ENGINE GEOMETRY - - -
-L_engine =  # m
-D_chm =  # m
-D_thrt =  # m
-D_exit =  # m
+L_engine = float(re.findall(r"(?<![a-zA-Z:])[-+]?\d*\.?\d+", config_lines[0])[0]) # m
+D_chm = float(re.findall(r"(?<![a-zA-Z:])[-+]?\d*\.?\d+", config_lines[1])[0]) # m
+D_thrt = float(re.findall(r"(?<![a-zA-Z:])[-+]?\d*\.?\d+", config_lines[2])[0]) # m
+D_exit = float(re.findall(r"(?<![a-zA-Z:])[-+]?\d*\.?\d+", config_lines[3])[0]) # m
 A_star = pi * (D_thrt/2)**2 # m2
 
-a_chmContract =  # deg
-ROC_chm = # m
+a_chmContract = float(re.findall(r"(?<![a-zA-Z:])[-+]?\d*\.?\d+", config_lines[4])[0]) # deg
+ROC_chm = float(re.findall(r"(?<![a-zA-Z:])[-+]?\d*\.?\d+", config_lines[5])[0]) # m
 
-a_nzlExp = # deg
-ROC_thrtDn =  # m
-ROC_thrtUp =  # m
+a_nzlExp = float(re.findall(r"(?<![a-zA-Z:])[-+]?\d*\.?\d+", config_lines[6])[0]) # deg
+ROC_thrtDn = float(re.findall(r"(?<![a-zA-Z:])[-+]?\d*\.?\d+", config_lines[7])[0]) # m
+ROC_thrtUp = float(re.findall(r"(?<![a-zA-Z:])[-+]?\d*\.?\d+", config_lines[8])[0]) # m
 
-n_cochan = # number of coolant channels
-L_cochanInnerWallDist =  # m
-L_cochanSideWall =  # m
-L_cochanDepth =  # m
+n_cochan = float(re.findall(r"(?<![a-zA-Z:])[-+]?\d*\.?\d+", config_lines[9])[0]) # number of coolant channels
+L_cochanInnerWallDist = float(re.findall(r"(?<![a-zA-Z:])[-+]?\d*\.?\d+", config_lines[10])[0]) # m
+L_cochanSideWall = float(re.findall(r"(?<![a-zA-Z:])[-+]?\d*\.?\d+", config_lines[11])[0]) # m
+L_cochanDepth = float(re.findall(r"(?<![a-zA-Z:])[-+]?\d*\.?\d+", config_lines[12])[0]) # m
 
 # - - - COMBUSTION / CEA - - -
 D_star = D_thrt # m
-P_c =  # Pa
+P_c = float(re.findall(r"(?<![a-zA-Z:])[-+]?\d*\.?\d+", config_lines[13])[0]) # Pa
 r_c = ROC_thrtDn # m
-T_c =  # K
-c_star =  # m/s, CEA
-gasConductivity =  # W m-1 K-1, CEA
-avgMolecularMass =  # g mol-1
+T_c = float(re.findall(r"(?<![a-zA-Z:])[-+]?\d*\.?\d+", config_lines[14])[0]) # K
+c_star = float(re.findall(r"(?<![a-zA-Z:])[-+]?\d*\.?\d+", config_lines[15])[0]) # m/s, CEA
+gasConductivity = float(re.findall(r"(?<![a-zA-Z:])[-+]?\d*\.?\d+", config_lines[16])[0]) # W m-1 K-1, CEA
+avgMolecularMass = float(re.findall(r"(?<![a-zA-Z:])[-+]?\d*\.?\d+", config_lines[17])[0]) # g mol-1
 
-T_w = 273 + # K, wall temp
+T_w = float(re.findall(r"(?<![a-zA-Z:])[-+]?\d*\.?\d+", config_lines[18])[0]) # K, wall temp
 
 # - - - COMBUSTION CHAMBER INPUTS - - -
-visc_chm = # millipoise, CEA
-gamma_chm = # CEA
+visc_chm = float(re.findall(r"(?<![a-zA-Z:])[-+]?\d*\.?\d+", config_lines[19])[0]) # millipoise, CEA
+gamma_chm = float(re.findall(r"(?<![a-zA-Z:])[-+]?\d*\.?\d+", config_lines[20])[0]) # CEA
 
 # - - - THROAT INPUTS - - -
-visc_thrt = # millipoise, CEA
-gamma_thrt = # CEA
+visc_thrt =  float(re.findall(r"(?<![a-zA-Z:])[-+]?\d*\.?\d+", config_lines[21])[0]) # millipoise, CEA
+gamma_thrt = float(re.findall(r"(?<![a-zA-Z:])[-+]?\d*\.?\d+", config_lines[22])[0]) # CEA
 
 # - - - MATERIALS - - -
-mtl_innerWall = CCZ
-mtl_outerShell = SS
+mtl_innerWall = get_material_by_name(config_lines[23])
+mtl_outerShell = get_material_by_name(config_lines[24])
 
 # - - - COOLANT - - -
-mtl_clt = JetA1
-mdot_clt = /n_cochan # kg s-1 (per channel)
-T_clt = 273 + # manifold coolant temp.
+mtl_clt = get_material_by_name(config_lines[25])
+mdot_clt = float(re.findall(r"(?<![a-zA-Z:])[-+]?\d*\.?\d+", config_lines[26])[0])/n_cochan # kg s-1 (per channel)
+T_clt = float(re.findall(r"(?<![a-zA-Z:])[-+]?\d*\.?\d+", config_lines[27])[0]) # manifold coolant temp. K
 
 # - - - ANALYSIS - - -
-fineness_vertical =
-time_end = # s
-time_step = # s
+fineness_vertical = int(re.findall(r"(?<![a-zA-Z:])[-+]?\d*\.?\d+", config_lines[28])[0])
+time_end = float(re.findall(r"(?<![a-zA-Z:])[-+]?\d*\.?\d+", config_lines[29])[0]) # s
+time_step = float(re.findall(r"(?<![a-zA-Z:])[-+]?\d*\.?\d+", config_lines[30])[0]) # s
 n_steps = int(time_end/time_step)
 
 # calculate engine geometry
@@ -95,8 +114,6 @@ for i in range(fineness_vertical):
     new_cylinder = cylinder(x, r_in, r_out, x_step, n_cochan, r_clt, a_clt, mtl_innerWall, T_w, Mach)
     cylinders.append(new_cylinder)
     m_engine += new_cylinder.get_m()
-
-print("Engine mass:", m_engine, "kg")
 
 # calculate Cp and Pr
 Cp_chm = (gamma_chm/(gamma_chm-1)) * uni_gas_const / avgMolecularMass # kJ kg-1 K-1, CEA
@@ -163,7 +180,7 @@ for t_step in range(n_steps):
         Q_in = h_g * (T_gas - cylinder.T) * cylinder.get_A_chm() * time_step
         Q_in_full += Q_in
 
-        h_l = get_coolant_film_coeff(mtl_clt, T_clt, cylinder.get_A_cochan_flow(), mdot_clt)
+        h_l = get_coolant_film_coeff(mtl_clt, T_clt_current, cylinder.get_A_cochan_flow(), mdot_clt)
         Q_out = h_l * (cylinder.T - T_clt_current) * cylinder.get_A_clt() * time_step
         Q_out_full += Q_out
 
@@ -214,4 +231,5 @@ for t_step in range(n_steps):
         j+=1
         print(str((t_step/n_steps) * 100), "%")
 
-plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_outs, Reynolds, Nusselts, T_gases, h_gs, h_ls, clt_vels, Q_in_fulls, Q_out_fulls)
+plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_outs, Reynolds, Nusselts,
+          T_gases, h_gs, h_ls, clt_vels, Q_in_fulls, Q_out_fulls, geom_x, geom_y)
