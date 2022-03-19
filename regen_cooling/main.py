@@ -159,7 +159,7 @@ for t_step in range(n_steps):
         T_gas = (1 + (gamma-1)/2 * M**2)**(-1) * T_c
             
         # calculate heat transfer
-        h_g = get_convection_coeff(D_star, vis, Cp, Pr, P_c, c_star, r_c, A_star, A, gamma, M, T_w, T_c)
+        h_g = get_convection_coeff(D_star, vis, Cp, Pr, P_c, c_star, r_c, A_star, A, gamma, M, cylinder.T, T_c)
         Q_in = h_g * (T_gas - cylinder.T) * cylinder.get_A_chm() * time_step
         Q_in_full += Q_in
 
