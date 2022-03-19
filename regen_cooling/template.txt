@@ -1,0 +1,50 @@
+Engine length: 				0.0 	m
+Combstion chamber diameter:		0.0 	m
+Throat diameter:			0.0 	m
+Exit diameter:				0.0 	m
+Chamber contraction angle:		0.0 	deg
+Chamber radius of curvature:		0.0	m
+Nozzle expansion angle:			0.0	deg
+Throat upstream radius of curvature:	0.0 	m
+Throat downstream radius of curvature:	0.0	m
+Number of coolant channels:		0	#
+Coolant channel - inner wall distance:	0.0	m
+Coolant channel side wall width:	0.0	m
+Coolant channel radial depth:		0.0	m
+Chamber pressure (Pc):			0.0	Pa
+Chamber stagnation temperature (Tc):	0.0	K
+Characteristic velocity (C*):		0.0	m s-1
+Gas conductivity:			0.0	W m-1 K-1
+Average molecular mass:			0.0	g mol-1
+Initial wall temperature:		0.0	K
+Combustion chamber viscosity:		0.0	millipoise
+Combustion chamber gamma:		0.0	-
+Throat viscosity:			0.0	millipoise
+Throat gamma:				0.0
+Inner wall material:			CCZ
+Outer shell material:			SS
+Coolant fluid:				Jet A1
+Coolant mass flow rate:			0.0	kg s-1
+Coolant manifold temperature:		0.0	K
+Analysis vertical fineness:		1000	#
+Analysis end time:			10	s
+Time steps:				0.001	s
+
+NOTES:
+	DO NOT CHANGE THE ORDER OF INPUT VALUES ABOVE! 
+	DO NOT EDIT THE UNITS OF INPUT VALUES! UNITS ARE HARD CODED!
+	(You can edit the lines, just keep the order and units.)
+	
+	Any lines below this point can be used for comments.
+	
+	Outer shell material is not important and is not used for any
+	calculations.
+	
+	Available materials are:
+	- Stainless Steel 304L (SS)
+	- Copper Chromium Zirconium (CCZ)
+	- Jet A1 (Jet A1)
+	
+	When choosing materials, use the exact string written in the 
+	parantheses in the list above. Otherwise, the program won't
+	recognize the material.
