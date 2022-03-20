@@ -42,7 +42,7 @@ def get_convection_coeff(D_star, vis, Cp, Pr, Pc, c_star, r_c, A_star, A, gamma,
     return h_g
 
 # Sutton Heat Transfer Analysis (8-25)
-def get_coolant_film_coeff(coolant_fluid, coolant_temp, A_cochan_flow, coolant_mass_flow):
+def get_coolant_film_coeff(coolant_fluid, coolant_temp, A_cochan_flow, coolant_mass_flow, D_hydro):
     
     # takes:
     # coolant fluid choice (e.g. LOX or Jet A-1)
@@ -58,7 +58,8 @@ def get_coolant_film_coeff(coolant_fluid, coolant_temp, A_cochan_flow, coolant_m
     coolant_spec_heat = coolant_fluid.get_specific_heat(coolant_temp)
     coolant_conductivity = coolant_fluid.get_thermal_conductivity(coolant_temp)
     
-    D_eq = ((4 * A_cochan_flow) / pi)**(0.5)
+    #D_eq = ((4 * A_cochan_flow) / pi)**(0.5)
+    D_eq = 2 * D_hydro
     flow_vel = coolant_mass_flow / (coolant_density * A_cochan_flow)
     
     h_liq = 0.023 * coolant_spec_heat * (coolant_mass_flow/A_cochan_flow)

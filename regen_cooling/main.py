@@ -135,6 +135,9 @@ h_ls = []
 clt_vels = []
 Q_in_fulls = []
 Q_out_fulls = []
+flow_areas = []
+wet_perimeters = []
+D_hydros = []
     
 time = 0
 j = 0
@@ -180,7 +183,15 @@ for t_step in range(n_steps):
         Q_in = h_g * (T_gas - cylinder.T) * cylinder.get_A_chm() * time_step
         Q_in_full += Q_in
 
-        h_l = get_coolant_film_coeff(mtl_clt, T_clt_current, cylinder.get_A_cochan_flow(), mdot_clt)
+
+        # compute Reynold's number
+        # https://en.wikipedia.org/wiki/Hydraulic_diameter
+        wet_perimeter = (2 * pi * cylinder.r_clt) * (cylinder.a_clt/360) + (2 * pi * cylinder.r_out) * (cylinder.a_clt/360) + 2 * L_cochanDepth
+        flow_area = cylinder.A_cochan_flow
+        D_hydro = 4 * (flow_area / wet_perimeter)
+        Reynolds_num = (mdot_clt * D_hydro) / (mtl_clt.get_viscosity(T_clt_current) * cylinder.A_cochan_flow)
+        
+        h_l = get_coolant_film_coeff(mtl_clt, T_clt_current, cylinder.get_A_cochan_flow(), mdot_clt, D_hydro)
         Q_out = h_l * (cylinder.T - T_clt_current) * cylinder.get_A_clt() * time_step
         Q_out_full += Q_out
 
@@ -194,13 +205,6 @@ for t_step in range(n_steps):
         dT_clt = (Q_out/n_cochan)/(m_flow * mtl_clt.get_specific_heat(T_clt_current))
         T_clt_current += dT_clt
 
-        # compute Reynold's number
-        # https://en.wikipedia.org/wiki/Hydraulic_diameter
-        wet_perimeter = (2 * pi * cylinder.r_clt) * (cylinder.a_clt/360) + (2 * pi * cylinder.r_out) * (cylinder.a_clt/360) + 2 * L_cochanDepth
-        flow_area = cylinder.A_cochan_flow
-        D_hydro = 4 * (flow_area / wet_perimeter)
-        Reynolds_num = (mdot_clt * D_hydro) / (mtl_clt.get_viscosity(T_clt_current) * cylinder.A_cochan_flow)
-
         clt_vel = mdot_clt / (mtl_clt.get_density(T_clt_current) * cylinder.A_cochan_flow)
 
         # compute Nusselt number (Dittus Boelter)
@@ -210,6 +214,9 @@ for t_step in range(n_steps):
         if t_step == 0:
             xs.insert(0, cylinder.x)
             T_gases.insert(0, T_gas)
+            flow_areas.insert(0, flow_area)
+            wet_perimeters.insert(0, wet_perimeter)
+            D_hydros.insert(0, D_hydro)
         if t_step % 100 == 0:
             Q_ins[j].insert(0, Q_in/time_step) # convert to W
             Q_outs[j].insert(0, Q_out/time_step) # convert to W
@@ -232,4 +239,5 @@ for t_step in range(n_steps):
         print(str((t_step/n_steps) * 100), "%")
 
 plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_outs, Reynolds, Nusselts,
-          T_gases, h_gs, h_ls, clt_vels, Q_in_fulls, Q_out_fulls, geom_x, geom_y)
+          T_gases, h_gs, h_ls, clt_vels, Q_in_fulls, Q_out_fulls, geom_x, geom_y,
+          flow_areas, wet_perimeters, D_hydros)
