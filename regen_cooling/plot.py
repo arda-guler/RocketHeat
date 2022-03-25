@@ -2,9 +2,11 @@ import time
 import datetime
 import os
 import matplotlib.pyplot as plt
+import shutil
 
 def plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_outs, Reynolds, Nusselts, T_gases,
-              h_gs, h_ls, clt_vels, Q_in_fulls, Q_out_fulls, geom_x, geom_y):
+              h_gs, h_ls, clt_vels, Q_in_fulls, Q_out_fulls, geom_x, geom_y,
+              flow_areas, wet_perimeters, D_hydros, filename=None):
 
     # PRINT TOTAL Q
     Q_in_total = 0
@@ -187,7 +189,35 @@ def plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_outs, Reyno
     plt.xlabel("X")
     plt.ylabel("Y")
 
-    folder_name = "heat_analysis_" + datetime.datetime.now().strftime("%y%m%d%H%M%S")
+    # FLOW AREA
+    plt.figure(13)
+    plt.plot(xs, flow_areas)
+    plt.grid()
+    plt.title("Coolant Flow Area")
+    plt.xlabel("X")
+    plt.ylabel("Area m2")
+
+    # WET PERIMETER
+    plt.figure(14)
+    plt.plot(xs, wet_perimeters)
+    plt.grid()
+    plt.title("Wet Perimeter")
+    plt.xlabel("X")
+    plt.ylabel("Perimeter m")
+
+    # HYDRAULIC DIAMETERS
+    plt.figure(15)
+    plt.plot(xs, D_hydros)
+    plt.grid()
+    plt.title("Hydraulic Diameter")
+    plt.xlabel("X")
+    plt.ylabel("Diameter m")
+
+    if not filename:
+        folder_name = "heat_analysis_" + datetime.datetime.now().strftime("%y%m%d%H%M%S")
+    else:
+        folder_name = filename.split("/")[2].split(".")[0]
+        
     print("Exporting figures to folder: " + folder_name)
 
     try:
@@ -199,7 +229,12 @@ def plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_outs, Reyno
         return
 
     try:
-        for i in range(1, 13):
+        shutil.copy(filename, folder_name)
+    except:
+        print("WARNING: Could not copy inputs file to analysis folder.")
+
+    try:
+        for i in range(1, 16):
             new_fig = plt.figure(i)
             save_str = folder_name + "/figure_" + str(i) + ".png"
             new_fig.savefig(save_str)
@@ -209,4 +244,12 @@ def plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_outs, Reyno
         return
 
     print("Figures exported successfully!")
-    qc = input("Press Enter to quit...")
+    
+    print("Clearing figures from memory...")
+    for i in range(1, 16):
+        new_fig = plt.figure(i)
+        new_fig.clear()
+        plt.close()
+
+    print("Analysis done!")
+    # qc = input("Press Enter to quit...")
