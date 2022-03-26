@@ -209,7 +209,7 @@ def perform(filename=None):
             clt_vel = mdot_clt / (mtl_clt.get_density(T_clt_current) * cy.A_cochan_flow)
             m_flow = mdot_clt * time_step
             dT_clt = (Q_out/n_cochan)/(m_flow * mtl_clt.get_specific_heat(T_clt_current))
-            T_clt_current += dT_clt * (cy.h / (clt_vel * time_step))
+            T_clt_current += dT_clt
 
             # compute Nusselt number (Dittus Boelter)
             Nusselt_num = 0.023 * Reynolds_num**0.8 * Pr**0.3
