@@ -1,2 +1,0 @@
-import analysis
-analysis.perform()

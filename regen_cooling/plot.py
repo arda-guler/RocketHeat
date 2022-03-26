@@ -216,7 +216,10 @@ def plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_outs, Reyno
     if not filename:
         folder_name = "heat_analysis_" + datetime.datetime.now().strftime("%y%m%d%H%M%S")
     else:
-        folder_name = filename.split("/")[2].split(".")[0]
+        if "/" in filename:
+            folder_name = filename.split("/")[2].split(".")[0]
+        else:
+            folder_name = filename.split(".")[0]
         
     print("Exporting figures to folder: " + folder_name)
 

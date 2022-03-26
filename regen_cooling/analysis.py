@@ -240,9 +240,9 @@ def perform(filename=None):
         time += time_step
         if t_step % 100 == 0:
             j+=1
-            print(str((t_step/n_steps) * 100), "%")
+            print("Current analysis is " + str((t_step/n_steps) * 100) + "% complete.")
 
     plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_outs, Reynolds, Nusselts,
               T_gases, h_gs, h_ls, clt_vels, Q_in_fulls, Q_out_fulls, geom_x, geom_y,
-              flow_areas, wet_perimeters, D_hydros, filename)
+              flow_areas, wet_perimeters, D_hydros, config_filename)
     
