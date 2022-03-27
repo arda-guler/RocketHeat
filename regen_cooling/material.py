@@ -71,8 +71,8 @@ class CuCrZr(material):
     def get_thermal_conductivity(self, temp):
         # takes temperature in K
         # returns thermal conductivity in W m-1 K-1
-        #return 358.07 * temp ** (-0.005)
-        return 353
+        return 358.07 * temp ** (-0.005)
+        #return 353
 
     def get_specific_heat(self, temp):
         # takes temperature in K

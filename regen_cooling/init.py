@@ -36,7 +36,7 @@ def init():
     print("Please make a choice:")
     print(" 1) (S)ingle Analysis")
     print(" 2) (A)uto Analysis")
-    print(" 3) (H)elp & About & Licence")
+    print(" 3) (H)elp & About")
     print("")
     selection = input(" > ")
     

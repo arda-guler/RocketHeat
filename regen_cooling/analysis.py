@@ -188,7 +188,6 @@ def perform(filename=None):
             Q_in = h_g * (T_gas - cy.T) * cy.get_A_chm() * time_step
             Q_in_full += Q_in
 
-
             # compute Reynold's number
             # https://en.wikipedia.org/wiki/Hydraulic_diameter
             wet_perimeter = (2 * pi * cy.r_clt) * (cy.a_clt/360) + (2 * pi * cy.r_out) * (cy.a_clt/360) + 2 * L_cochanDepth
@@ -200,7 +199,7 @@ def perform(filename=None):
             Q_out = h_l * (cy.T - T_clt_current) * cy.get_A_clt() * time_step
             Q_out_full += Q_out
 
-            # increase cy temp
+            # increase cylinder temp
             Q_net = Q_in - Q_out
             dT = Q_net/cy.get_heat_capacity()
             cy.T += dT

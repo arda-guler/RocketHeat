@@ -34,7 +34,7 @@ def generate_file(i, cochan_depth_start, cochan_depth_incr, side_wall_width_star
     write_str += infl[6]
     write_str += infl[7]
     write_str += infl[8]
-    write_str += "AUTO: Num. of coolant channels (m): " + n_cochan(i, n_cochan_start, n_cochan_incr) + "\n"
+    write_str += "AUTO: Num. of coolant channels: " + n_cochan(i, n_cochan_start, n_cochan_incr) + "\n"
     write_str += infl[10]
     write_str += "AUTO: Coolant channel side wall width (m): " + sidewallwidth(i, side_wall_width_start, side_wall_width_incr) + "\n"
     write_str += "AUTO: Coolant channel depth (m): " + cochandepth(i, cochan_depth_start, cochan_depth_incr) + "\n"
