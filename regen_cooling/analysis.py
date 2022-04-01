@@ -195,7 +195,8 @@ def perform(filename=None):
             D_hydro = 4 * (flow_area / wet_perimeter)
             Reynolds_num = (mdot_clt * D_hydro) / (mtl_clt.get_viscosity(T_clt_current) * cy.A_cochan_flow)
             
-            h_l = get_coolant_film_coeff(mtl_clt, T_clt_current, cy.get_A_cochan_flow(), mdot_clt, D_hydro)
+            #h_l = get_coolant_film_coeff(mtl_clt, T_clt_current, cy.get_A_cochan_flow(), mdot_clt, D_hydro)
+            h_l = get_coolant_film_coeff_NEW(mtl_clt, T_clt_current, mdot_clt, D_hydro, cy)
             Q_out = h_l * (cy.T - T_clt_current) * cy.get_A_clt() * time_step
             Q_out_full += Q_out
 

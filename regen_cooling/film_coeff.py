@@ -68,3 +68,17 @@ def get_coolant_film_coeff(coolant_fluid, coolant_temp, A_cochan_flow, coolant_m
 
     return h_liq
 
+def get_coolant_film_coeff_NEW(mtl_clt, T_clt, mdot_clt, D_hydro, cy):
+
+    Pr = mtl_clt.get_specific_heat(T_clt) * mtl_clt.get_viscosity(T_clt) / mtl_clt.get_thermal_conductivity(T_clt)
+    
+    # compute Reynold's number
+    # https://en.wikipedia.org/wiki/Hydraulic_diameter
+    Reynolds_num = (mdot_clt * D_hydro) / (mtl_clt.get_viscosity(T_clt) * cy.A_cochan_flow)
+
+    # compute Nusselt number
+    Nusselt_num = 0.021 * (Reynolds_num**(0.8)) * (Pr**(0.4)) * (0.64 + 0.36 * (T_clt/cy.T))
+
+    h_liq = Nusselt_num * mtl_clt.get_thermal_conductivity(T_clt) / D_hydro
+    return h_liq
+
