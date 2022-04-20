@@ -1,5 +1,6 @@
 # - - - - - - - - - - - - - - - - - - - -
-# REGENERATIVE HEAT TRANSFER COMPUTATIONS
+# LIQUID PROPELLANT ROCKET ENGINE THERMAL
+# ANALYSIS TOOL
 # - - - - - - - - - - - - - - - - - - - -
 # Program to compute transient heat
 # transfers in an LRE.
@@ -34,7 +35,7 @@ def get_material_by_name(line):
     elif "Jet A1" in line:
         return materials[2]
 
-def perform(filename=None):
+def perform(filename=None, getchar=True):
     if filename:
         config_filename = filename
     else:
@@ -194,9 +195,10 @@ def perform(filename=None):
             flow_area = cy.A_cochan_flow
             D_hydro = 4 * (flow_area / wet_perimeter)
             Reynolds_num = (mdot_clt * D_hydro) / (mtl_clt.get_viscosity(T_clt_current) * cy.A_cochan_flow)
-            
-            #h_l = get_coolant_film_coeff(mtl_clt, T_clt_current, cy.get_A_cochan_flow(), mdot_clt, D_hydro)
-            h_l = get_coolant_film_coeff_NEW(mtl_clt, T_clt_current, mdot_clt, D_hydro, cy)
+
+            # compute heat absorption into regen cooling channels
+            # h_l = get_h_clt_kerosene(mtl_clt, T_clt_current, mdot_clt, D_hydro, cy)
+            h_l = get_h_clt_dittus_boelter(mtl_clt, T_clt, mdot_clt, D_hydro, cy)
             Q_out = h_l * (cy.T - T_clt_current) * cy.get_A_clt() * time_step
             Q_out_full += Q_out
 
@@ -245,4 +247,7 @@ def perform(filename=None):
     plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_outs, Reynolds, Nusselts,
               T_gases, h_gs, h_ls, clt_vels, Q_in_fulls, Q_out_fulls, geom_x, geom_y,
               flow_areas, wet_perimeters, D_hydros, config_filename)
+
+    if getchar:
+        qc = input("Press Enter to move on...")
     

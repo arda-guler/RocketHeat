@@ -97,6 +97,10 @@ def auto_analyze():
         filename = generate_file(i, cochan_depth_start, cochan_depth_incr, side_wall_width_start, side_wall_width_incr,
                                  n_cochan_start, n_cochan_incr, base_file)
 
-        
-        analysis.perform(filename)
+        if not i == (n_analysis - 1):
+            getchar = False
+        else:
+            getchar = True
+            
+        analysis.perform(filename, getchar)
     

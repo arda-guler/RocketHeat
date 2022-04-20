@@ -41,34 +41,9 @@ def get_convection_coeff(D_star, vis, Cp, Pr, Pc, c_star, r_c, A_star, A, gamma,
     
     return h_g
 
-# Sutton Heat Transfer Analysis (8-25)
-def get_coolant_film_coeff(coolant_fluid, coolant_temp, A_cochan_flow, coolant_mass_flow, D_hydro):
-    
-    # takes:
-    # coolant fluid choice (e.g. LOX or Jet A-1)
-    # coolant temperature in K
-    # coolant flow area in m2
-    # coolant mass flow rate in kg s-1
-
-    # gives:
-    # h_liq: convection coefficient in W m-2 K-1
-    
-    coolant_density = coolant_fluid.get_density(coolant_temp)
-    coolant_viscosity = coolant_fluid.get_viscosity(coolant_temp)
-    coolant_spec_heat = coolant_fluid.get_specific_heat(coolant_temp)
-    coolant_conductivity = coolant_fluid.get_thermal_conductivity(coolant_temp)
-    
-    #D_eq = ((4 * A_cochan_flow) / pi)**(0.5)
-    D_eq = 2 * D_hydro
-    flow_vel = coolant_mass_flow / (coolant_density * A_cochan_flow)
-    
-    h_liq = 0.023 * coolant_spec_heat * (coolant_mass_flow/A_cochan_flow)
-    h_liq *= ((D_eq * flow_vel * coolant_density)/coolant_viscosity)**(-0.2)
-    h_liq *= (coolant_viscosity * coolant_spec_heat * coolant_conductivity)**(-2/3)
-
-    return h_liq
-
-def get_coolant_film_coeff_NEW(mtl_clt, T_clt, mdot_clt, D_hydro, cy):
+# Lebedinsky E.V., Kalmykov G.P., et al. Working processes in liquid-propellant rocket
+# engine and their simulation. Moscow, Mashinostroenie, 2008
+def get_h_clt_kerosene(mtl_clt, T_clt, mdot_clt, D_hydro, cy):
 
     Pr = mtl_clt.get_specific_heat(T_clt) * mtl_clt.get_viscosity(T_clt) / mtl_clt.get_thermal_conductivity(T_clt)
     
@@ -81,4 +56,18 @@ def get_coolant_film_coeff_NEW(mtl_clt, T_clt, mdot_clt, D_hydro, cy):
 
     h_liq = Nusselt_num * mtl_clt.get_thermal_conductivity(T_clt) / D_hydro
     return h_liq
+
+# Dittus-Boelter
+def get_h_clt_dittus_boelter(mtl_clt, T_clt, mdot_clt, D_hydro, cy):
+
+    clt_density = mtl_clt.get_density(T_clt)
+    clt_thermoConduct = mtl_clt.get_thermal_conductivity(T_clt)
+    clt_visc = mtl_clt.get_viscosity(T_clt)
+    Prandtl = mtl_clt.get_specific_heat(T_clt) * mtl_clt.get_viscosity(T_clt) / mtl_clt.get_thermal_conductivity(T_clt)
+    clt_vel = mdot_clt / (clt_density * cy.A_cochan_flow)
+    
+    Reynold = clt_density * clt_vel * D_hydro / clt_visc
+    Nusselt = 0.023 * (Reynold**0.8) * (Prandtl**0.4)
+
+    return Nusselt * clt_thermoConduct / D_hydro
 

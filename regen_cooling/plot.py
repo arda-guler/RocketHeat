@@ -220,8 +220,8 @@ def plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_outs, Reyno
             folder_name = filename.split("/")[2].split(".")[0]
         else:
             folder_name = filename.split(".")[0]
-        
-    print("Exporting figures to folder: " + folder_name)
+
+    print("Exporting data to folder: " + folder_name)
 
     try:
         if not os.path.exists(folder_name):
@@ -230,6 +230,14 @@ def plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_outs, Reyno
         print("ERROR: Could not create folder. Try saving figures by hand.")
         plt.show()
         return
+
+    try:
+        with open(str(folder_name + "/geometry.txt"), "w") as f:
+            f.write(str(geom_x))
+            f.write("\n")
+            f.write(str(geom_y))
+    except:
+        print("WARNING: Could not export geometry data.")
 
     try:
         shutil.copy(filename, folder_name)
@@ -255,4 +263,3 @@ def plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_outs, Reyno
         plt.close()
 
     print("Analysis done!")
-    # qc = input("Press Enter to quit...")
