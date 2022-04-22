@@ -71,3 +71,40 @@ def get_h_clt_dittus_boelter(mtl_clt, T_clt, mdot_clt, D_hydro, cy):
 
     return Nusselt * clt_thermoConduct / D_hydro
 
+def film_cooling_length(cy, x_inject, mdot_inject, n_cochan, mtl_clt, T_clt_film, Pr, Cp, visc_gas, avgMolecularMass, T_gas):
+    
+    # Cp = gas spec heat = Cpg
+    T_clt_saturation = 660 # K
+    T_clt_film = 550 # K
+    temp_diff = T_gas - T_clt_saturation
+    
+    L_circumference = 2 * pi * cy.r_in # m
+    D = cy.r_in * 2 # m
+    A = pi * cy.r_in**2 # m2
+    mass_flow_per_area = (mdot_inject * n_cochan)/A # kg m-2 s-1
+    mass_flow_per_circumference = (mdot_inject * n_cochan)/L_circumferece # kg m-1 s-1
+
+    MW_g = avgMolecularMass
+    MW_c = mtl_clt.get_avg_MW()
+
+    # lmbda = latent heat of vaporization of coolant
+    lmbda = mtl_clt.get_heat_of_vaporization()
+    lmbda_star = lmbda + mtl_clt.get_specific_heat(T_clt_film) * (T_clt_saturation - T_clt_film)
+
+    if MW_g > MW_c:
+        a = 0.6
+    else:
+        a = 0.35
+    Km = (MW_g / MW_c) ** a
+    
+    bigH = (Cp * temp_diff / lmbda_star) * Km
+    
+    # h_ratio = h/h0
+    h_ratio = math.log(1+bigH)/bigH
+
+    L_lqdFilm = (61.62 * mtl_clt.get_viscosity(T_clt_film))/(mass_flow_per_area) # unit becomes: Pa s m2 s kg-1
+    L_lqdFilm *= ( (lmbda_star * mass_flow_per_circumference) / (Cp * temp_diff * visc_gas * h_ratio) )**(1.25)
+    L_lqdFilm *= (Pr ** 0.78)
+
+    return L_lqdFilm
+

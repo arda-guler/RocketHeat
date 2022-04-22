@@ -4,7 +4,7 @@ import os
 import matplotlib.pyplot as plt
 import shutil
 
-def plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_outs, Reynolds, Nusselts, T_gases,
+def plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_in_per_areas, Q_outs, Reynolds, Nusselts, T_gases,
               h_gs, h_ls, clt_vels, Q_in_fulls, Q_out_fulls, geom_x, geom_y,
               flow_areas, wet_perimeters, D_hydros, filename=None):
 
@@ -32,12 +32,22 @@ def plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_outs, Reyno
         blue = 1 - red
         plt.plot(xs, cylinder_temps[i], color=(red, 0, blue))
 
+    # show engine contour
+    normalize_scale = max(cylinder_temps[-1]) * 2
+    geom_y_normalized = []
+    for y in geom_y:
+        geom_y_normalized.append(y*normalize_scale)
+        
+    plt.plot(geom_x, geom_y_normalized, color="black")
+    ax.fill_between(geom_x, geom_y_normalized, where=[True]*len(geom_x), interpolate=True, color='black')
+
     plt.grid()
     plt.title("Wall Temperature")
     plt.xlabel("Position (m)")
     plt.ylabel("Temperature (C)")
 
     # COOLANT TEMP. PLOT
+    _, ax = plt.subplots()
     plt.figure(2)
 
     for i in range(0, num_frames, int(num_frames/10)):
@@ -45,28 +55,74 @@ def plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_outs, Reyno
         blue = 1 - red
         plt.plot(xs, coolant_temps[i], color=(red, 0, blue))
 
+    normalize_scale = max(coolant_temps[-1]) * 2
+    geom_y_normalized = []
+    for y in geom_y:
+        geom_y_normalized.append(y*normalize_scale)
+        
+    plt.plot(geom_x, geom_y_normalized, color="black")
+    ax.fill_between(geom_x, geom_y_normalized, where=[True]*len(geom_x), interpolate=True, color='black')
+
     plt.grid()
     plt.title("Coolant Temperature")
     plt.xlabel("Position (m)")
     plt.ylabel("Temperature (C)")
 
     # HEAT PLOT
+    _, ax = plt.subplots()
     plt.figure(3)
 
     for i in range(0, num_frames, int(num_frames/10)):
         plt.plot(xs, Q_ins[i], color=(1,0,0))
         plt.plot(xs, Q_outs[i], color=(0,0,1))
 
+    normalize_scale = max(Q_ins[1]) * 2
+    geom_y_normalized = []
+    for y in geom_y:
+        geom_y_normalized.append(y*normalize_scale)
+        
+    plt.plot(geom_x, geom_y_normalized, color="black")
+    ax.fill_between(geom_x, geom_y_normalized, where=[True]*len(geom_x), interpolate=True, color='black')
+
     plt.grid()
     plt.title("Heat Transfer")
     plt.xlabel("Position (m)")
     plt.ylabel("Heat Transferred (W)")
 
-    # REYNOLDS NUMBER PLOT
+    # HEAT PER AREA PLOT
+    _, ax = plt.subplots()
     plt.figure(4)
 
     for i in range(0, num_frames, int(num_frames/10)):
+        plt.plot(xs, Q_in_per_areas[i], color=(1,0,0))
+
+    normalize_scale = max(Q_in_per_areas[1]) * 2
+    geom_y_normalized = []
+    for y in geom_y:
+        geom_y_normalized.append(y*normalize_scale)
+        
+    plt.plot(geom_x, geom_y_normalized, color="black")
+    ax.fill_between(geom_x, geom_y_normalized, where=[True]*len(geom_x), interpolate=True, color='black')
+
+    plt.grid()
+    plt.title("Heat Transfer Per Area")
+    plt.xlabel("Position (m)")
+    plt.ylabel("Heat Transferred (W m-2)")
+
+    # REYNOLDS NUMBER PLOT
+    _, ax = plt.subplots()
+    plt.figure(5)
+
+    for i in range(0, num_frames, int(num_frames/10)):
         plt.plot(xs, Reynolds[i])
+
+    normalize_scale = max(Reynolds[-1]) * 2
+    geom_y_normalized = []
+    for y in geom_y:
+        geom_y_normalized.append(y*normalize_scale)
+        
+    plt.plot(geom_x, geom_y_normalized, color="black")
+    ax.fill_between(geom_x, geom_y_normalized, where=[True]*len(geom_x), interpolate=True, color='black')
 
     plt.grid()
     plt.title("Reynolds Number")
@@ -74,10 +130,19 @@ def plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_outs, Reyno
     plt.ylabel("Reynolds Number")
 
     # NUSSELT NUMBER PLOT
-    plt.figure(5)
+    _, ax = plt.subplots()
+    plt.figure(6)
 
     for i in range(0, num_frames, int(num_frames/10)):
         plt.plot(xs, Nusselts[i])
+
+    normalize_scale = max(Nusselts[-1]) * 2
+    geom_y_normalized = []
+    for y in geom_y:
+        geom_y_normalized.append(y*normalize_scale)
+        
+    plt.plot(geom_x, geom_y_normalized, color="black")
+    ax.fill_between(geom_x, geom_y_normalized, where=[True]*len(geom_x), interpolate=True, color='black')
 
     plt.grid()
     plt.title("Nusselts Number")
@@ -85,9 +150,18 @@ def plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_outs, Reyno
     plt.ylabel("Nusselts Number")
 
     # COMBUSTION GAS TEMP. PLOT
-    plt.figure(6)
+    _, ax = plt.subplots()
+    plt.figure(7)
 
     plt.plot(xs, T_gases)
+
+    normalize_scale = max(T_gases) * 2
+    geom_y_normalized = []
+    for y in geom_y:
+        geom_y_normalized.append(y*normalize_scale)
+        
+    plt.plot(geom_x, geom_y_normalized, color="black")
+    ax.fill_between(geom_x, geom_y_normalized, where=[True]*len(geom_x), interpolate=True, color='black')
 
     plt.grid()
     plt.title("Gas Temperature (K)")
@@ -95,10 +169,19 @@ def plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_outs, Reyno
     plt.ylabel("Gas Temperature")
 
     # GAS CONVECTION COEFF. PLOT
-    plt.figure(7)
+    _, ax = plt.subplots()
+    plt.figure(8)
 
     for i in range(0, num_frames, int(num_frames/10)):
         plt.plot(xs, h_gs[i])
+
+    normalize_scale = max(h_gs[1]) * 2
+    geom_y_normalized = []
+    for y in geom_y:
+        geom_y_normalized.append(y*normalize_scale)
+        
+    plt.plot(geom_x, geom_y_normalized, color="black")
+    ax.fill_between(geom_x, geom_y_normalized, where=[True]*len(geom_x), interpolate=True, color='black')
 
     plt.grid()
     plt.title("hg")
@@ -106,10 +189,19 @@ def plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_outs, Reyno
     plt.ylabel("hg")
 
     # LIQUID FILM COEFF. PLOT
-    plt.figure(8)
+    _, ax = plt.subplots()
+    plt.figure(9)
 
     for i in range(0, num_frames, int(num_frames/10)):
         plt.plot(xs, h_ls[i])
+
+    normalize_scale = max(h_ls[-1]) * 2
+    geom_y_normalized = []
+    for y in geom_y:
+        geom_y_normalized.append(y*normalize_scale)
+        
+    plt.plot(geom_x, geom_y_normalized, color="black")
+    ax.fill_between(geom_x, geom_y_normalized, where=[True]*len(geom_x), interpolate=True, color='black')
 
     plt.grid()
     plt.title("hl")
@@ -117,10 +209,19 @@ def plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_outs, Reyno
     plt.ylabel("hl")
 
     # COOLANT VELOCITY PLOT
-    plt.figure(9)
+    _, ax = plt.subplots()
+    plt.figure(10)
 
     for i in range(0, num_frames, int(num_frames/10)):
         plt.plot(xs, clt_vels[i])
+
+    normalize_scale = max(clt_vels[-1]) * 2
+    geom_y_normalized = []
+    for y in geom_y:
+        geom_y_normalized.append(y*normalize_scale)
+        
+    plt.plot(geom_x, geom_y_normalized, color="black")
+    ax.fill_between(geom_x, geom_y_normalized, where=[True]*len(geom_x), interpolate=True, color='black')
 
     plt.grid()
     plt.title("Coolant Flow Velocity")
@@ -128,7 +229,8 @@ def plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_outs, Reyno
     plt.ylabel("Velocity (m s-1)")
 
     # TOTAL Q IN PLOT
-    plt.figure(10)
+    _, ax = plt.subplots()
+    plt.figure(11)
 
     plt.plot(Q_in_fulls)
 
@@ -138,7 +240,8 @@ def plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_outs, Reyno
     plt.ylabel("Total Q In")
 
     # TOTAL Q OUT PLOT
-    plt.figure(11)
+    _, ax = plt.subplots()
+    plt.figure(12)
 
     plt.plot(Q_out_fulls)
 
@@ -175,7 +278,8 @@ def plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_outs, Reyno
 ##        ax.plot3D(Q_nets[i], xs, times[i], color="green")
 
     # ENGINE GEOMETRY
-    plt.figure(12)
+    _, ax = plt.subplots()
+    plt.figure(13)
 
     plt.axes().set_aspect('equal')
     plt.plot(geom_x, geom_y)
@@ -190,7 +294,8 @@ def plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_outs, Reyno
     plt.ylabel("Y")
 
     # FLOW AREA
-    plt.figure(13)
+    _, ax = plt.subplots()
+    plt.figure(14)
     plt.plot(xs, flow_areas)
     plt.grid()
     plt.title("Coolant Flow Area")
@@ -198,7 +303,8 @@ def plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_outs, Reyno
     plt.ylabel("Area m2")
 
     # WET PERIMETER
-    plt.figure(14)
+    _, ax = plt.subplots()
+    plt.figure(15)
     plt.plot(xs, wet_perimeters)
     plt.grid()
     plt.title("Wet Perimeter")
@@ -206,7 +312,8 @@ def plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_outs, Reyno
     plt.ylabel("Perimeter m")
 
     # HYDRAULIC DIAMETERS
-    plt.figure(15)
+    _, ax = plt.subplots()
+    plt.figure(16)
     plt.plot(xs, D_hydros)
     plt.grid()
     plt.title("Hydraulic Diameter")
@@ -257,7 +364,7 @@ def plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_outs, Reyno
     print("Figures exported successfully!")
     
     print("Clearing figures from memory...")
-    for i in range(1, 16):
+    for i in range(1, 17):
         new_fig = plt.figure(i)
         new_fig.clear()
         plt.close()

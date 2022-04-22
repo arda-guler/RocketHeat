@@ -109,6 +109,7 @@ def perform(filename=None, getchar=True):
 
     # generate cylinders
     m_engine = 0
+    r_prev = None
     cylinders = []
     for i in range(fineness_vertical):
         x = i * x_step
@@ -117,9 +118,11 @@ def perform(filename=None, getchar=True):
         r_out = r_clt + L_cochanDepth
         a_clt = (360/n_cochan) - (360 * L_cochanSideWall)/(2 * pi * r_clt)
         Mach = get_mach_num_at(x, subsonic_M, subsonic_x, supersonic_M, supersonic_x, engine_lengths)
-        new_cylinder = cylinder(x, r_in, r_out, x_step, n_cochan, r_clt, a_clt, mtl_innerWall, T_w, Mach)
+        new_cylinder = cylinder(x, r_in, r_out, x_step, n_cochan, r_clt, a_clt, mtl_innerWall, T_w, Mach, r_prev)
         cylinders.append(new_cylinder)
         m_engine += new_cylinder.get_m()
+
+        r_prev = r_in
 
     # calculate Cp and Pr
     Cp_chm = (gamma_chm/(gamma_chm-1)) * uni_gas_const / avgMolecularMass # kJ kg-1 K-1, CEA
@@ -129,6 +132,7 @@ def perform(filename=None, getchar=True):
     Pr_thrt = (4*gamma_thrt) / (9*gamma_thrt - 5) # unitless
 
     Q_ins = []
+    Q_in_per_areas = []
     Q_outs = []
     xs = []
     cylinder_temps = []
@@ -151,6 +155,7 @@ def perform(filename=None, getchar=True):
 
         if t_step % 100 == 0:
             Q_ins.append([])
+            Q_in_per_areas.append([])
             Q_outs.append([])
             cylinder_temps.append([])
             coolant_temps.append([])
@@ -187,6 +192,7 @@ def perform(filename=None, getchar=True):
             # calculate heat transfer
             h_g = get_convection_coeff(D_star, vis, Cp, Pr, P_c, c_star, r_c, A_star, A, gamma, M, cy.T, T_c)
             Q_in = h_g * (T_gas - cy.T) * cy.get_A_chm() * time_step
+            Q_in_per_area = h_g * (T_gas - cy.T) # W per m2 (this is only for plotting)
             Q_in_full += Q_in
 
             # compute Reynold's number
@@ -196,25 +202,43 @@ def perform(filename=None, getchar=True):
             D_hydro = 4 * (flow_area / wet_perimeter)
             Reynolds_num = (mdot_clt * D_hydro) / (mtl_clt.get_viscosity(T_clt_current) * cy.A_cochan_flow)
 
-            # compute heat absorption into regen cooling channels
-            # h_l = get_h_clt_kerosene(mtl_clt, T_clt_current, mdot_clt, D_hydro, cy)
-            h_l = get_h_clt_dittus_boelter(mtl_clt, T_clt, mdot_clt, D_hydro, cy)
-            Q_out = h_l * (cy.T - T_clt_current) * cy.get_A_clt() * time_step
-            Q_out_full += Q_out
+            if not mdot_clt == 0: 
+                # compute heat absorption into regen cooling channels
+                # h_l = get_h_clt_kerosene(mtl_clt, T_clt_current, mdot_clt, D_hydro, cy)
+                h_l = get_h_clt_dittus_boelter(mtl_clt, T_clt, mdot_clt, D_hydro, cy)
+                Q_out = h_l * (cy.T - T_clt_current) * cy.get_A_clt() * time_step
+                Q_out_full += Q_out
 
-            # increase cylinder temp
-            Q_net = Q_in - Q_out
-            dT = Q_net/cy.get_heat_capacity()
-            cy.T += dT
+                # increase cylinder temp
+                Q_net = Q_in - Q_out
+                dT = Q_net/cy.get_heat_capacity()
+                cy.T += dT
 
-            # increase coolant fluid temp.
-            clt_vel = mdot_clt / (mtl_clt.get_density(T_clt_current) * cy.A_cochan_flow)
-            m_flow = mdot_clt * time_step
-            dT_clt = (Q_out/n_cochan)/(m_flow * mtl_clt.get_specific_heat(T_clt_current))
-            T_clt_current += dT_clt
+                # increase coolant fluid temp.
+                clt_vel = mdot_clt / (mtl_clt.get_density(T_clt_current) * cy.A_cochan_flow)
+                m_flow = mdot_clt * time_step
+                dT_clt = (Q_out/n_cochan)/(m_flow * mtl_clt.get_specific_heat(T_clt_current))
+                T_clt_current += dT_clt
 
-            # compute Nusselt number (Dittus Boelter)
-            Nusselt_num = 0.023 * Reynolds_num**0.8 * Pr**0.3
+                # compute Nusselt number (Dittus Boelter)
+                Pr_clt = mtl_clt.get_specific_heat(T_clt) * mtl_clt.get_viscosity(T_clt) / mtl_clt.get_thermal_conductivity(T_clt)
+                Nusselt_num = 0.023 * Reynolds_num**0.8 * Pr_clt**0.3
+            else:
+                h_l = 0
+                Q_out = 0
+                Q_net = Q_in
+
+                # increase cylinder temp (no cooling)
+                dT = Q_net/cy.get_heat_capacity()
+                cy.T += dT
+                
+                clt_vel = 0
+                m_flow = 0
+                dT_clt = 0
+                T_clt_current += 0
+                Pr_clt = 0
+                Nusselt_num = 0
+                
 
             # record data for plotting
             if t_step == 0:
@@ -225,6 +249,7 @@ def perform(filename=None, getchar=True):
                 D_hydros.insert(0, D_hydro)
             if t_step % 100 == 0:
                 Q_ins[j].insert(0, Q_in/time_step) # convert to W
+                Q_in_per_areas[j].insert(0, Q_in_per_area)
                 Q_outs[j].insert(0, Q_out/time_step) # convert to W
                 cylinder_temps[j].insert(0, cy.T - 273) # convert to celcius
                 coolant_temps[j].insert(0, T_clt_current - 273) # convert to celcius
@@ -244,7 +269,7 @@ def perform(filename=None, getchar=True):
             j+=1
             print("Current analysis is " + str((t_step/n_steps) * 100) + "% complete.")
 
-    plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_outs, Reynolds, Nusselts,
+    plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_in_per_areas, Q_outs, Reynolds, Nusselts,
               T_gases, h_gs, h_ls, clt_vels, Q_in_fulls, Q_out_fulls, geom_x, geom_y,
               flow_areas, wet_perimeters, D_hydros, config_filename)
 
