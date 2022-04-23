@@ -124,6 +124,21 @@ def perform(filename=None, getchar=True):
 
         r_prev = r_in
 
+    # get important coolant channel widths
+    L_skirt_chan_width = (2*pi*cylinders[-1].r_clt) * (cylinders[-1].a_clt/360)
+    
+    L_min_chan_width = None
+    L_max_chan_width = None
+    
+    for cylin in cylinders:
+        if not L_min_chan_width or (2*pi*cylin.r_clt) * (cylin.a_clt/360) < L_min_chan_width:
+            L_min_chan_width = (2*pi*cylin.r_clt) * (cylin.a_clt/360)
+
+        if not L_max_chan_width or (2*pi*cylin.r_clt) * (cylin.a_clt/360) > L_max_chan_width:
+            L_max_chan_width = (2*pi*cylin.r_clt) * (cylin.a_clt/360)
+
+    L_chamber_chan_width = (2*pi*cylinders[0].r_clt) * (cylinders[0].a_clt/360)
+
     # calculate Cp and Pr
     Cp_chm = (gamma_chm/(gamma_chm-1)) * uni_gas_const / avgMolecularMass # kJ kg-1 K-1, CEA
     Pr_chm = (4*gamma_chm) / (9*gamma_chm - 5) # unitless
@@ -204,7 +219,7 @@ def perform(filename=None, getchar=True):
 
             if not mdot_clt == 0: 
                 # compute heat absorption into regen cooling channels
-                # h_l = get_h_clt_kerosene(mtl_clt, T_clt_current, mdot_clt, D_hydro, cy)
+                #h_l = get_h_clt_kerosene(mtl_clt, T_clt_current, mdot_clt, D_hydro, cy)
                 h_l = get_h_clt_dittus_boelter(mtl_clt, T_clt, mdot_clt, D_hydro, cy)
                 Q_out = h_l * (cy.T - T_clt_current) * cy.get_A_clt() * time_step
                 Q_out_full += Q_out
@@ -223,6 +238,7 @@ def perform(filename=None, getchar=True):
                 # compute Nusselt number (Dittus Boelter)
                 Pr_clt = mtl_clt.get_specific_heat(T_clt) * mtl_clt.get_viscosity(T_clt) / mtl_clt.get_thermal_conductivity(T_clt)
                 Nusselt_num = 0.023 * Reynolds_num**0.8 * Pr_clt**0.3
+                    
             else:
                 h_l = 0
                 Q_out = 0
@@ -239,7 +255,6 @@ def perform(filename=None, getchar=True):
                 Pr_clt = 0
                 Nusselt_num = 0
                 
-
             # record data for plotting
             if t_step == 0:
                 xs.insert(0, cy.x)
@@ -271,7 +286,8 @@ def perform(filename=None, getchar=True):
 
     plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_in_per_areas, Q_outs, Reynolds, Nusselts,
               T_gases, h_gs, h_ls, clt_vels, Q_in_fulls, Q_out_fulls, geom_x, geom_y,
-              flow_areas, wet_perimeters, D_hydros, config_filename)
+              flow_areas, wet_perimeters, D_hydros, m_engine, L_skirt_chan_width, L_chamber_chan_width, L_min_chan_width,
+              L_max_chan_width, engine_lengths, config_filename)
 
     if getchar:
         qc = input("Press Enter to move on...")
