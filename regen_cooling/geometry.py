@@ -356,3 +356,51 @@ def get_mach_num_at(x):
     elif engine_lengths[4] <= x <= engine_lengths[6]:
         index = get_index_of_closest_num_in_list(x, supersonic_x)
         return supersonic_mach[index]
+
+# generate a 3D model of the engine geometry
+def generate_3D(geom_x, geom_y, n_cochan, L_cochanInnerWallDist, L_cochanSideWall, L_cochanDepth):
+    
+    vertices = []
+    faces = []
+    n_vertices_half_circle = int(n_cochan * 5)
+
+    x_index = 0
+    for x in geom_x:
+
+        r_in = geom_y[x_index]
+        theta = -pi/2
+
+        # build inner wall
+        for i in range(n_vertices_half_circle):
+            current_vertex = [x, r_in * math.sin(theta), r_in * math.cos(theta)]
+            vertices.append(current_vertex)
+            theta += pi/n_vertices_half_circle
+
+        vertices.append("OUTERSHELL")
+        
+        theta = -pi/2
+        n_halfCochan = n_cochan/2
+        r_clt = r_in + L_cochanInnerWallDist
+        r_out = r_clt + L_cochanDepth
+        a_sideWall = L_cochanSideWall / r_out
+        a_channel = (pi - (a_sideWall * n_halfCochan)) / n_halfCochan
+        a_full = a_sideWall + a_channel
+
+        # build cooling channels
+        for i in range(n_vertices_half_circle):
+            # it is a wall vertex
+            if theta % a_full <= a_sideWall:
+                current_vertex = [x, r_out * math.sin(theta), r_out * math.cos(theta)]
+                
+            # it is a channel vertex
+            else:
+                current_vertex = [x, r_clt * math.sin(theta), r_clt * math.cos(theta)]
+
+            vertices.append(current_vertex)
+            theta += pi/n_vertices_half_circle
+
+        vertices.append("NEWX")
+
+        x_index += 1
+
+    return vertices

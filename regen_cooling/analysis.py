@@ -103,6 +103,9 @@ def perform(filename=None, getchar=True):
     geom_x, geom_y, x_step, engine_lengths = calculate_geometry(L_engine, D_chm, D_thrt, D_exit, a_chmContract, ROC_chm,
                                                                 a_nzlExp, ROC_thrtDn, ROC_thrtUp, fineness_vertical)
 
+    # generate 3D object
+    vis_model = generate_3D(geom_x, geom_y, n_cochan, L_cochanInnerWallDist, L_cochanSideWall, L_cochanDepth)
+
     # calculate Mach distribution
     subsonic_x, subsonic_M, supersonic_x, supersonic_M = calc_mach_num(L_engine, engine_lengths[4], T_c, gamma_thrt, avgMolecularMass, fineness_vertical,
                                                                        L_engine, D_chm, D_thrt, D_exit, a_chmContract, ROC_chm, a_nzlExp, ROC_thrtDn, ROC_thrtUp)
@@ -231,8 +234,7 @@ def perform(filename=None, getchar=True):
 
                 # increase coolant fluid temp.
                 clt_vel = mdot_clt / (mtl_clt.get_density(T_clt_current) * cy.A_cochan_flow)
-                m_flow = mdot_clt * time_step
-                dT_clt = (Q_out/n_cochan)/(m_flow * mtl_clt.get_specific_heat(T_clt_current))
+                dT_clt = (Q_out/(n_cochan * time_step)) / (mdot_clt * mtl_clt.get_specific_heat(T_clt_current))
                 T_clt_current += dT_clt
 
                 # compute Nusselt number (Dittus Boelter)
@@ -287,7 +289,7 @@ def perform(filename=None, getchar=True):
     plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_in_per_areas, Q_outs, Reynolds, Nusselts,
               T_gases, h_gs, h_ls, clt_vels, Q_in_fulls, Q_out_fulls, geom_x, geom_y,
               flow_areas, wet_perimeters, D_hydros, m_engine, L_skirt_chan_width, L_chamber_chan_width, L_min_chan_width,
-              L_max_chan_width, engine_lengths, config_filename)
+              L_max_chan_width, engine_lengths, vis_model, config_filename)
 
     if getchar:
         qc = input("Press Enter to move on...")
