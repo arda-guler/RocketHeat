@@ -127,17 +127,27 @@ def main():
     print("Reading 3D model...")
     model_data = import_model()
 
+    window_x = 1000
+    window_y = 600
+    window_ratio = window_x/window_y
+    fov = 70
+    near_clip = 0.0005
+    far_clip = 100
+
     glfw.init()
 
-    window = glfw.create_window(800, 600, "Engine Viewer", None, None)
-    glfw.set_window_pos(window,200,200)
+    window = glfw.create_window(window_x, window_y, "Engine Viewer", None, None)
+    glfw.set_window_pos(window,100,100)
     glfw.make_context_current(window)
     
-    gluPerspective(70, 800/600, 0.0005, 250.0)
+    gluPerspective(fov, window_ratio, near_clip, far_clip)
     glEnable(GL_CULL_FACE)
     glPolygonMode(GL_FRONT_AND_BACK, GL_POINT)
 
     main_cam = camera([0,0,0], [[1,0,0],[0,1,0],[0,0,1]])
+
+    show_inner = True
+    show_outer = True
 
     x_end = model_data[-2][0][0][0]
     x_mid = x_end/2
@@ -259,53 +269,69 @@ def main():
             if keyboard.is_pressed("h"):
                 scale_origin[1] -= 0.001
                 scale_end[1] -= 0.001
+
+        if keyboard.is_pressed("z"):
+            show_inner = False
+        if keyboard.is_pressed("x"):
+            show_inner = True
+        if keyboard.is_pressed("c"):
+            show_outer = False
+        if keyboard.is_pressed("v"):
+            show_outer = True
             
         # rendering
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
         
         for axial in model_data[::10]:
 
-            glColor(0.8, 0.2, 0.2)
-            # inner wall vertices
-            glPushMatrix()
-            glBegin(GL_LINE_STRIP)
-            for ivertex in axial[0][::15]:
-                glVertex3f(ivertex[0], ivertex[1], ivertex[2])
-            glEnd()
-            glPopMatrix()
+            # radial draw
+            if show_inner:
+                glColor(0.8, 0.2, 0.2)
+                # inner wall vertices
+                glPushMatrix()
+                glBegin(GL_LINE_STRIP)
+                for ivertex in axial[0][::15]:
+                    glVertex3f(ivertex[0], ivertex[1], ivertex[2])
+                glEnd()
+                glPopMatrix()
 
-            glColor(0.2, 0.5, 0.8)
-            # outer wall vertex
-            glPushMatrix()
-            glBegin(GL_LINE_STRIP)
-            for overtex in axial[1]:
-                glVertex3d(overtex[0], overtex[1], overtex[2])
-            glEnd()
-            glPopMatrix()
+            if show_outer:
+                glColor(0.2, 0.5, 0.8)
+                # outer wall vertices
+                glPushMatrix()
+                glBegin(GL_LINE_STRIP)
+                for overtex in axial[1]:
+                    glVertex3d(overtex[0], overtex[1], overtex[2])
+                glEnd()
+                glPopMatrix()
 
         rad_index = 0
+        
+        # axial draw
         glPushMatrix()
         while rad_index < n_angular:
-            
-            glColor(0.8, 0.2, 0.2)
-            glBegin(GL_LINE_STRIP)
-            ax_index = 0
-            
-            while ax_index < len(model_data) - 1:
-                glVertex3f(model_data[ax_index][0][rad_index][0], model_data[ax_index][0][rad_index][1], model_data[ax_index][0][rad_index][2])
-                ax_index += int(len(model_data)/50)
-                
-            glEnd()
 
-            glColor(0.2, 0.5, 0.8)
-            glBegin(GL_LINE_STRIP)
-            ax_index = 0
-            
-            while ax_index < len(model_data) - 1:
-                glVertex3f(model_data[ax_index][1][rad_index][0], model_data[ax_index][1][rad_index][1], model_data[ax_index][1][rad_index][2])
-                ax_index += int(len(model_data)/50)
+            if show_inner:
+                glColor(0.8, 0.2, 0.2)
+                glBegin(GL_LINE_STRIP)
+                ax_index = 0
                 
-            glEnd()
+                while ax_index < len(model_data) - 1:
+                    glVertex3f(model_data[ax_index][0][rad_index][0], model_data[ax_index][0][rad_index][1], model_data[ax_index][0][rad_index][2])
+                    ax_index += int(len(model_data)/50)
+                    
+                glEnd()
+
+            if show_outer:
+                glColor(0.2, 0.5, 0.8)
+                glBegin(GL_LINE_STRIP)
+                ax_index = 0
+                
+                while ax_index < len(model_data) - 1:
+                    glVertex3f(model_data[ax_index][1][rad_index][0], model_data[ax_index][1][rad_index][1], model_data[ax_index][1][rad_index][2])
+                    ax_index += int(len(model_data)/50)
+                    
+                glEnd()
             
             rad_index += int(n_angular/50)
         

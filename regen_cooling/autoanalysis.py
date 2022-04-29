@@ -91,9 +91,9 @@ def auto_analyze():
     
     for i in range(n_analysis):
         clear_cmd_terminal()
-        print("\nANALYSIS " + str(i) + "\n")
+        print("\nANALYSIS #" + str(i) + "\n\n")
         percent = i/n_analysis * 100
-        print(f"Auto-analysis sequence {percent}% complete.\n")
+        print("Preparing next analysis...")
         filename = generate_file(i, cochan_depth_start, cochan_depth_incr, side_wall_width_start, side_wall_width_incr,
                                  n_cochan_start, n_cochan_incr, base_file)
 
@@ -102,5 +102,5 @@ def auto_analyze():
         else:
             getchar = True
             
-        analysis.perform(filename, getchar)
+        analysis.perform(filename, getchar, True, percent)
     

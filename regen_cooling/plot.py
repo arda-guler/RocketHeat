@@ -18,21 +18,9 @@ def plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_in_per_area
     for Q in Q_out_fulls:
         Q_out_total += Q
 
-    print("\nTotal Q_in:", Q_in_total * 100)
-    print("Total Q_out:", Q_out_total * 100)
-    print("Net Q:", (Q_in_total - Q_out_total) * 100)
-
-    print("")
-    print("Engine mass (kg):", m_engine)
-
-    print("")
-    print("Engine contour change positions (m):", str(engine_lengths))
-
-    print("")
-    print("Chamber coolant channel width (m):", L_chamber_chan_width)
-    print("Skirt coolant channel width (m):", L_skirt_chan_width)
-    print("Min. coolant channel width (m):", L_min_chan_width)
-    print("Max. coolant channel width (m):", L_max_chan_width)
+##    print("\nTotal Q_in:", Q_in_total * 100)
+##    print("Total Q_out:", Q_out_total * 100)
+##    print("Net Q:", (Q_in_total - Q_out_total) * 100)
 
     def plot_engine_contour(ax):
         ax.set_aspect("equal")
@@ -321,6 +309,8 @@ def plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_in_per_area
     plt.xlabel("X")
     plt.ylabel("Diameter m")
 
+    print("")
+
     if not filename:
         folder_name = "heat_analysis_" + datetime.datetime.now().strftime("%y%m%d%H%M%S")
     else:
@@ -365,6 +355,11 @@ def plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_in_per_area
         shutil.copy(filename, folder_name)
     except:
         print("WARNING: Could not copy inputs file to analysis folder.")
+
+    try:
+        shutil.copy("modelviewer.py", folder_name)
+    except:
+        print("WARNING: Could not copy modelviewer utility to analysis folder.")
 
     try:
         for i in range(1, 17):

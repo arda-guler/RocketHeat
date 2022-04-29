@@ -18,6 +18,7 @@ from geometry import *
 from material import SS304L, CuCrZr, Jet_A1
 from mach import *
 from plot import *
+from ui import *
 
 SS = SS304L()
 CCZ = CuCrZr()
@@ -35,10 +36,11 @@ def get_material_by_name(line):
     elif "Jet A1" in line:
         return materials[2]
 
-def perform(filename=None, getchar=True):
+def perform(filename=None, getchar=True, auto_analysis=False, auto_analysis_percent=0):
     if filename:
         config_filename = filename
     else:
+        print("")
         config_filename = input("Enter filename to import values from: ")
         
     if not config_filename.endswith(".txt"):
@@ -104,6 +106,7 @@ def perform(filename=None, getchar=True):
                                                                 a_nzlExp, ROC_thrtDn, ROC_thrtUp, fineness_vertical)
 
     # generate 3D object
+    print("Generating 3D model...")
     vis_model = generate_3D(geom_x, geom_y, n_cochan, L_cochanInnerWallDist, L_cochanSideWall, L_cochanDepth)
 
     # calculate Mach distribution
@@ -284,7 +287,22 @@ def perform(filename=None, getchar=True):
         time += time_step
         if t_step % 100 == 0:
             j+=1
-            print("Current analysis is " + str((t_step/n_steps) * 100) + "% complete.")
+
+            clear_cmd_terminal()
+            print("")
+            
+            if auto_analysis:
+                print("= = = THERMAL AUTO-ANALYSIS = = =")
+                print("")
+                print("Auto-analysis sequence:")
+                print(generate_progress_bar(auto_analysis_percent))
+            else:
+                print("= = = SINGLE THERMAL ANALYSIS = = =")
+            
+            print("")
+            #print("Current analysis:\n" + str((t_step/n_steps) * 100) + "% complete.")
+            print("Current analysis:")
+            print(generate_progress_bar((t_step/n_steps) * 100))
 
     plot_data(time_step, xs, cylinder_temps, coolant_temps, Q_ins, Q_in_per_areas, Q_outs, Reynolds, Nusselts,
               T_gases, h_gs, h_ls, clt_vels, Q_in_fulls, Q_out_fulls, geom_x, geom_y,
