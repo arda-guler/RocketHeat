@@ -208,6 +208,7 @@ def perform(filename=None, getchar=True, auto_analysis=False, auto_analysis_perc
         cylinder_film_exists = [False] * len(cylinders)
 
         i_cylinder_film = -1
+        mdot_film_current = mdot_filmInject
         # loop forwards when computing film cooling
         for cy in cylinders:
             i_cylinder_film += 1
@@ -236,16 +237,27 @@ def perform(filename=None, getchar=True, auto_analysis=False, auto_analysis_perc
             if not film_exists and cy.x >= L_filmInject:
                 film_exists = True
                 mdot_clt_current = mdot_clt - mdot_filmInject/n_cochan
+                mdot_film_current = mdot_filmInject
 
             # there is film cooling!
-            if mdot_filmInject > 0 and cy.x > L_filmInject and T_film < 600: # TODO: add this to material properties 
+            if mdot_filmInject > 0 and cy.x > L_filmInject and mdot_film_current > 0: # TODO: add this to material properties 
                 stability_coeff = 0.6 # how do you even get this
-                dT_film = ( h_g * (T_gas - T_film) * cy.get_A_chm())
+                dT_film = ( h_g * (T_gas - T_film) * cy.get_A_chm() )
                 dT_film *= (stability_coeff * mdot_filmInject * mtl_clt.get_specific_heat(T_film))**(-1)
-                T_film += dT_film # increase film temperature
 
-                if T_film < 600: # TODO: add this to material properties 
+                if T_film + dT_film < 600: # TODO: add this to material properties 
+                    T_film += dT_film # increase film temperature
                     cylinder_film_exists[i_cylinder_film] = True
+
+                else: # check vaporization
+                    dmdot_film = ( h_g * (T_gas - T_film) * cy.get_A_chm() ) / mtl_clt.get_heat_of_vaporization(T_film)
+
+                    if mdot_film_current - dmdot_film >= 0: # still not completely vaporized
+                        mdot_film_current -= dmdot_film
+                        cylinder_film_exists[i_cylinder_film] = True
+
+                    else: # liquid film has completely vaporized
+                        mdot_film_current = 0
 
             if t_step % 100 == 0:
                 T_films[j].append(T_film)
